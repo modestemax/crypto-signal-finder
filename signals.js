@@ -1,179 +1,14 @@
 const debug = require('debug')('signals');
-const curl = require('curl');
 const _ = require('lodash');
+const tvLoader = require('./tv-loader');
 
 module.exports = function ({ env, appEmitter }) {
     let { emitException } = appEmitter;
-    let { QUOTE_CUR, EXCHANGE, TIMEFRAME, timeframesIntervals } = env;
+    let { QUOTE_CUR, EXCHANGE, TIMEFRAME, } = env;
 
 
     // const debug2 = (tf) => _.throttle((msg) => require('debug')('signals:' + tf)(msg), 30e3);
 
-
-    const params = ({ timeframe, tradingCurrency = QUOTE_CUR, exchangeId = EXCHANGE } = {}) => {
-        let timeframeFilter = /1d/i.test(timeframe) || +timeframe === 60 * 24 ? '' : '|' + timeframe;
-        return {
-            timeframe,
-            data: {
-                "filter": [
-                    { "left": "change" + timeframeFilter, "operation": "nempty" },
-                    { "left": "exchange", "operation": "equal", "right": exchangeId.toUpperCase() },
-                    { "left": "name,description", "operation": "match", "right": tradingCurrency + "$" }
-                ],
-                "symbols": { "query": { "types": [] } },
-                "columns": [
-                    "name"
-                    , "close" + timeframeFilter
-                    , "change" + timeframeFilter
-                    , "high" + timeframeFilter
-                    , "low" + timeframeFilter
-                    , "volume" + timeframeFilter
-                    , "Recommend.All" + timeframeFilter
-                    , "exchange"
-                    , "description"
-                    , "ADX" + timeframeFilter
-                    , "ADX-DI" + timeframeFilter
-                    , "ADX+DI" + timeframeFilter
-                    , "RSI" + timeframeFilter
-                    , "EMA10" + timeframeFilter
-                    , "EMA20" + timeframeFilter
-                    , "MACD.macd" + timeframeFilter
-                    , "MACD.signal" + timeframeFilter
-                    , "Aroon.Up" + timeframeFilter
-                    , "Aroon.Down" + timeframeFilter
-                    , "VWMA" + timeframeFilter
-                    , "open" + timeframeFilter
-                    , "change_from_open" + timeframeFilter
-                    , "Volatility.D"
-                    , "Stoch.K" + timeframeFilter
-                    , "Stoch.D" + timeframeFilter
-                    , "Stoch.RSI.K" + timeframeFilter
-                    , "Stoch.RSI.D" + timeframeFilter
-                    , "Mom" + timeframeFilter
-                ],
-                "sort": { "sortBy": "change" + timeframeFilter, "sortOrder": "desc" },
-                "options": { "lang": "en" },
-                "range": [0, 150]
-            }
-        }
-
-    };
-
-    const beautify = (data, timeframe) => {
-        return _(data).map(({ d }) => {
-                let id = Math.trunc(Date.now() / timeframesIntervals[timeframe]);
-                return {
-                    timeframe,
-                    symbolId: d[0],
-                    now: new Date(),
-                    time: new Date(id * timeframesIntervals[timeframe]),
-                    id,
-                    close: d[1],
-                    changePercent: +d[2],//.toFixed(2),
-                    changeFromOpen: +d[21],//.toFixed(2),
-                    high: d[3],
-                    low: d[4],
-                    volume: d[5],
-                    rating: d[6],
-                    signal: signal(d[6]),
-                    signalStrength: strength(d[6]),
-                    signalString: signalString(d[6]),
-                    exchange: d[7].toLowerCase(),
-                    description: d[8],
-                    ema10: d[13],
-                    ema20: d[14],
-                    adx: d[9],
-                    minusDi: d[10],
-                    plusDi: d[11],
-                    macd: d[15],
-                    macdSignal: d[16],
-                    rsi: d[12],
-                    volatility: d[22],
-                    stochasticK: d[23],
-                    stochasticD: d[24],
-                    stochasticRSIK: d[25],
-                    stochasticRSID: d[26],
-                    momentum: d[27],
-                    aroonUp: d[17],
-                    aroonDown: d[18],
-                    vwma: d[19],
-                    open: d[20],
-                    green: d[21] > 0
-                };
-
-                function signal(int) {
-                    switch (true) {
-                        case int > 0:
-                            return 'buy';
-                        case int < 0:
-                            return 'sell';
-                        default:
-                            return 'neutral'
-                    }
-                }
-
-                function strength(int) {
-                    switch (true) {
-                        case int > .5:
-                            return 1;
-                        case int < -.5:
-                            return 1;
-                        default:
-                            return 0
-                    }
-                }
-
-                function signalString(int) {
-
-                    return (strength(int) === 1 ? 'Strong ' : '') + signal(int)
-                }
-            }
-        ).filter(d => d).groupBy('symbolId').mapValues(([v]) => v).value()
-    };
-
-    function getSignals({ options = params(), rate = 1e3 } = {}) {
-        const url = 'https://scanner.tradingview.com/crypto/scan';
-        const { data, timeframe } = options;
-
-        // let debug = getSignals.debug = getSignals.debug || {};
-        // debug = debug[timeframe] = debug[timeframe] || debug2(timeframe);
-        //
-        console.log(`loading signals for timeframe ${timeframe}`)
-        curl.postJSON(url, data, (err, res, data) => {
-            try {
-                if (!err) {
-                    let jsonData = JSON.parse(data);
-                    if (jsonData.data && !jsonData.error) {
-                        let beautifyData = beautify(jsonData.data, timeframe);
-                        // let long = longTimeframe ? ':long' : '';
-                       console.log(`signals ${timeframe} ${_.keys(beautifyData).length} symbols loaded`);
-                        // setImmediate(() => appEmitter.emit('tv:signals' + long, { markets: beautifyData, timeframe }))
-
-                        // beautifyData=_.pick(beautifyData,['AMB/BTC'])
-                        // beautifyData = _(beautifyData).orderBy(['volatility', 'volume'], ['desc', 'desc']).mapKeys('symbolId').value()
-                        // if (+timeframe === +TIMEFRAME) {
-                        //     _.keys(beautifyData).forEach(symbolId => {
-                        //         let ticker = beautifyData[symbolId];
-                        //         ticker.price = ticker.close;
-                        //         ticker.last = ticker.close;
-                        //         appEmitter.emit('signals:ticker:' + symbolId, ({ ticker }))
-                        //     })
-                        // }
-                        return setImmediate(() => appEmitter.emit('tv:signals', { markets: beautifyData, timeframe }))
-                    }
-                    err = jsonData.error;
-                }
-                if (err) throw(err)
-            } catch (ex) {
-                getSignals.apply(null, arguments)
-                setImmediate(() => appEmitter.emit('tv:signals-error', ex));
-                console.log('signals exception:' + timeframe + ' ' + ex);
-                emitException(ex)
-            } finally {
-                // setTimeout(() => getSignals.apply(null, args), rate);
-            }
-        })
-    }
 
 //
 // async function fetchTickers() {
@@ -213,9 +48,18 @@ module.exports = function ({ env, appEmitter }) {
 
     env.TIMEFRAMES.forEach((timeframe) => {
             //get signal max 1 time per second
-            const throttledGetSignals = _.throttle(() => getSignals({ options: params({ timeframe }) }), 10e3);
+            const throttledGetSignals = _.throttle(() =>
+                    tvLoader({
+                        timeframe,
+                        filter: QUOTE_CUR + '$',
+                        exchangeId: EXCHANGE
+                    }).then(
+                        data => appEmitter.emit('tv:signals', { markets: data, timeframe }),
+                        err => appEmitter.emit('tv:signals-error', err)
+                    )
+                , 10e3);
 
-        // setInterval(throttledGetSignals, 1e3)
+            // setInterval(throttledGetSignals, 1e3)
 
             throttledGetSignals();
 
@@ -227,18 +71,22 @@ module.exports = function ({ env, appEmitter }) {
     );
 
 
-    debug('trading on ' + TIMEFRAME + ' trimeframe');
-
     function getStartTime(timeframe) {
-        let remainingTimeToClose = timeframesIntervals[timeframe] - Date.now() % timeframesIntervals[timeframe];
-        remainingTimeToClose -= 5e3
-        console.log(`Will start loading timeframe ${timeframe} data at ${new Date(Date.now() + remainingTimeToClose).toString() } seconds`)
-        return remainingTimeToClose;
-        // return 0
+        return (60e3 - Date.now() % 60e3) - 5e3;
     }
 
     function getRate(timeframe) {
-        return timeframesIntervals[timeframe]
+        switch (+timeframe) {
+            case 1:
+                return 10e3;
+            case 5:
+                return 60e3;
+            case 15:
+                return 3 * 60e3;
+            case 60:
+                return 10 * 60e3;
+        }
+        // return timeframesIntervals[timeframe]
     }
 }
 

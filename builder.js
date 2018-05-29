@@ -54,7 +54,7 @@ module.exports = function ({ env, appEmitter }) {
         return (high - low) / Math.abs(low) * 100;
     }
 
-    function backupLastPoints({ count = 15, signal, /* timeframes = [5, 15, 60]*/ }) {
+    function backupLastPoints({ limitPointCount = 15, signal, /* timeframes = [5, 15, 60]*/ }) {
         const { symbolId, timeframe } = signal;
         init();
         savePoints();
@@ -63,21 +63,29 @@ module.exports = function ({ env, appEmitter }) {
 
         function savePoints(/*timeframe*/) {
             const points = getLastPoints({ symbolId, timeframe });
-            const pivot = getPivotPoint({ symbolId, timeframe });
+            // const pivot = getPivotPoint({ symbolId, timeframe });
             // let signal = signals[timeframe][symbolId];
-            if (points && pivot.id && pivot.id !== signal.id) {//todo (pivot.id ||) is for testing
-                points.push(_.extend({}, pivot));
-                points.splice(0, points.length - count);
+
+            // _.extend(pivot, signal);
+
+            if (points) {
+                if (_.isEmpty(points)) {
+                    points.push(signal);
+                } else if (_.last(points).id === signal.id) {
+                    _.extend(_.last(points), signal);
+                } else {
+                    points.push(signal);
+                    points.splice(0, points.length - limitPointCount);
+                }
                 (async () => await  redis.setAsync(`points:${symbolId}:${timeframe}`, JSON.stringify(points), 'EX', timeframe * 60 + 30))()
             }
-            _.extend(pivot, signal);
         }
 
         function init() {
             backupLastPoints.tendances = backupLastPoints.tendances || {};
             backupLastPoints.tendances[symbolId] = backupLastPoints.tendances[symbolId] || {};
-            backupLastPoints.pivot = backupLastPoints.pivot || {};
-            backupLastPoints.pivot[symbolId] = backupLastPoints.pivot[symbolId] || {};
+            // backupLastPoints.pivot = backupLastPoints.pivot || {};
+            // backupLastPoints.pivot[symbolId] = backupLastPoints.pivot[symbolId] || {};
 
         }
 
@@ -93,11 +101,11 @@ module.exports = function ({ env, appEmitter }) {
         }
 
 
-        function getPivotPoint({ symbolId, timeframe }) {
-            return backupLastPoints.pivot [symbolId] [timeframe] = backupLastPoints.pivot [symbolId] [timeframe] || {};
-        }
+        // function getPivotPoint({ symbolId, timeframe }) {
+        //     return backupLastPoints.pivot [symbolId] [timeframe] = backupLastPoints.pivot [symbolId] [timeframe] || {};
+        // }
 
-        _.defaults(backupLastPoints, { getLastPoints, getPivotPoint });
+        _.defaults(backupLastPoints, { getLastPoints, /*getPivotPoint */});
     }
 
     function buildIndicators({ signal, /*timeframes = [5, 15, 60],*/ trendingQuote = 3 / 4 }) {
@@ -115,7 +123,7 @@ module.exports = function ({ env, appEmitter }) {
         function buildSpecialData(timeframe) {
 
             const points = backupLastPoints.getLastPoints({ symbolId, timeframe });
-            const pivot = backupLastPoints.getPivotPoint({ symbolId, timeframe });
+            // const pivot = backupLastPoints.getPivotPoint({ symbolId, timeframe });
             // const points = backupLast3Points.getLast3UniqPoints({ symbol, timeframe, uniqCount: timeframe < 60 ? 3 : 2 });
             // const [last] = points.slice(-1);
             const last = _.last(points);
@@ -357,15 +365,19 @@ module.exports = function ({ env, appEmitter }) {
     }
 
     function getTrendStatus({ trendingQuote, indicator, points, last, reversed = false }) {
-        let max = _.maxBy(points, indicator)[indicator];
-        let min = _.minBy(points, indicator)[indicator];
-        let avgMinimum = max * trendingQuote + min * (1 - trendingQuote);
-        let trendRes = trend(_.map(_.compact([].concat(points, last)), indicator), {
-            avgMinimum,
-            reversed,
-            lastPoints: last ? 2 : 1
-        });
-        return { [`${indicator}Trend`]: trendRes, [`${indicator}IsTrendingUp`]: trendRes > 1 }
+        try {
+            let max = _.maxBy(points, indicator)[indicator];
+            let min = _.minBy(points, indicator)[indicator];
+            let avgMinimum = max * trendingQuote + min * (1 - trendingQuote);
+            let trendRes = trend(_.map(_.compact([].concat(points, last)), indicator), {
+                avgMinimum,
+                reversed,
+                lastPoints: last ? 2 : 1
+            });
+            return { [`${indicator}Trend`]: trendRes, [`${indicator}IsTrendingUp`]: trendRes > 1 }
+        } catch (e) {
+
+        }
 
     }
 
