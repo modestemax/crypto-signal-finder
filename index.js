@@ -5,7 +5,7 @@ const formatError = require('format-error').format;
 const env = {
     PRODUCTION: !!process.env.PRODUCTION,
     TIMEFRAMES: (process.env.TIMEFRAMES || '1,5,15,60').split(','),
-    QUOTE_CUR: process.env.QUOTE_CUR || 'BTC',
+    SYMBOLS_FILTER: process.env.SYMBOLS_FILTER || 'BTC$',
     EXCHANGE: process.env.EXCHANGE || 'binance',
     timeframesIntervals: {
         1: 60e3,

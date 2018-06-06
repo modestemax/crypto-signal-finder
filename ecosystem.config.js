@@ -11,9 +11,9 @@ module.exports = {
             // cwd: 'trading',
             env: {
                 DEBUG: '*',
-                QUOTE_CUR: 'BTC',
+                SYMBOLS_FILTER: '(eth|xrp|bcc|ltc|eos|ada|xlm|miota|trx|neo|tusd|bcn|xmr|dash|xem|ven|bnb|etc|qtum|ont)btc$',
                 EXCHANGE: 'binance',
-                TIMEFRAMES: '1,5,15,60'
+                TIMEFRAMES: '1,5,15,60,240'
             },
         },
     ],

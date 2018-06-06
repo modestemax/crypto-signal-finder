@@ -4,7 +4,7 @@ const tvLoader = require('./tv-loader');
 
 module.exports = function ({ env, appEmitter }) {
     let { emitException } = appEmitter;
-    let { QUOTE_CUR, EXCHANGE, TIMEFRAME, } = env;
+    let { SYMBOLS_FILTER, EXCHANGE, TIMEFRAME, } = env;
 
 
     // const debug2 = (tf) => _.throttle((msg) => require('debug')('signals:' + tf)(msg), 30e3);
@@ -51,7 +51,7 @@ module.exports = function ({ env, appEmitter }) {
             const throttledGetSignals = _.throttle(() =>
                     tvLoader({
                         timeframe,
-                        filter: QUOTE_CUR + '$',
+                        filter: SYMBOLS_FILTER ,
                         exchangeId: EXCHANGE
                     }).then(
                         data => appEmitter.emit('tv:signals', { markets: data, timeframe }),
