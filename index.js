@@ -1,4 +1,5 @@
-// require('../env')
+console.log('Starting App');
+
 const formatError = require('format-error').format;
 
 

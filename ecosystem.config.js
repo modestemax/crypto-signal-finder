@@ -30,7 +30,7 @@ module.exports = {
             ref: 'origin/master',
             repo: ' https://github.com/modestemax/m24_trading_bot.git',
             path: '/home/ubuntu/bot/prod',
-            'post-deploy': 'pm2 reload ecosystem.config.indicators.js --env production'
+            'post-deploy': 'pm2 reload ecosystem.config.js --env production'
         },
         dev: {
             "key": "/home/max/.ssh/keysvirginia.pem",
@@ -39,7 +39,7 @@ module.exports = {
             ref: 'origin/master',
             repo: ' https://github.com/modestemax/m24_trading_bot.git',
             path: '/home/ubuntu/bot/dev',
-            'post-deploy': 'pm2 reload ecosystem.config.indicators.js--env dev',
+            'post-deploy': 'pm2 reload ecosystem.config.js --env dev',
             // 'post-deploy': 'pm2 reload ecosystem.config.js --env dev',
             // 'post-deploy': 'pm2 restart bot_btc_val_46',
             env: {
