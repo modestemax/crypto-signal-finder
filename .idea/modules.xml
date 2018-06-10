@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/crypto-signal-finder.iml" filepath="$PROJECT_DIR$/.idea/crypto-signal-finder.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/indicators-builder.iml" filepath="$PROJECT_DIR$/.idea/indicators-builder.iml" />
     </modules>
   </component>

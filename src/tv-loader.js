@@ -4,7 +4,7 @@ const _ = require('lodash');
 
 
 const params = ({ timeframe, filter = 'btc$', exchangeId = 'binance' } = {}) => {
-    let timeframeFilter = /1d/i.test(timeframe) || +timeframe === 60 * 24 ? '' : '|' + timeframe;
+    let timeframeFilter = !timeframe || /1d/i.test(timeframe) || +timeframe === 60 * 24 ? '' : '|' + timeframe;
     return {
         timeframe,
         data: {
@@ -43,6 +43,8 @@ const params = ({ timeframe, filter = 'btc$', exchangeId = 'binance' } = {}) => 
                 , "Stoch.RSI.K" + timeframeFilter
                 , "Stoch.RSI.D" + timeframeFilter
                 , "Mom" + timeframeFilter
+                , "bid"
+                , "ask"
             ],
             "sort": { "sortBy": "change" + timeframeFilter, "sortOrder": "desc" },
             "options": { "lang": "en" },
@@ -92,7 +94,9 @@ const beautify = (data, timeframe) => {
                 aroonDown: d[18],
                 vwma: d[19],
                 open: d[20],
-                green: d[21] > 0
+                green: d[21] > 0,
+                bid: d[28],
+                ask: d[29],
             };
 
             function signal(int) {

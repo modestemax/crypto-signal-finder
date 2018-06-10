@@ -1,5 +1,5 @@
 {
-  "name": "indicators-builder",
+  "name": "crypto-signal-finder",
   "version": "1.0.0",
   "description": "load indicators from tradingview and prepare them",
   "main": "index.js",
