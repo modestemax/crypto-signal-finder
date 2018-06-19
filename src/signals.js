@@ -51,7 +51,7 @@ module.exports = function ({ env, appEmitter }) {
             const throttledGetSignals = _.throttle(() =>
                     tvLoader({
                         timeframe,
-                        filter: SYMBOLS_FILTER ,
+                        filter: SYMBOLS_FILTER,
                         exchangeId: EXCHANGE
                     }).then(
                         data => appEmitter.emit('tv:signals', { markets: data, timeframe }),
@@ -85,6 +85,8 @@ module.exports = function ({ env, appEmitter }) {
                 return 3 * 60e3;
             case 60:
                 return 10 * 60e3;
+            default:
+                return 60 * 60e3;
         }
         // return timeframesIntervals[timeframe]
     }
