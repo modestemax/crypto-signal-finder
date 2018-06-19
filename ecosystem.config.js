@@ -5,10 +5,10 @@ module.exports = {
      */
     apps: [
         {
-            name: 'INDIC',
+            name: 'finder',
             script: 'index.js',
             "exec_mode": "cluster",
-            // cwd: 'trading',
+            cwd: 'src',
             env: {
                 DEBUG: '*',
                 SYMBOLS_FILTER: '(eth|xrp|bcc|ltc|eos|ada|xlm|miota|trx|neo|tusd|bcn|xmr|dash|xem|ven|bnb|etc|qtum|ont)btc$',

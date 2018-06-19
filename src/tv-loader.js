@@ -133,14 +133,14 @@ function getSignals({ options = params(), rate = 1e3 } = {}) {
     return new Promise((resolve, reject) => {
         const url = 'https://scanner.tradingview.com/crypto/scan';
         const { data, timeframe } = options;
-        debug(`loading signals for timeframe ${timeframe}`)
+        timeframe && debug(`loading signals for timeframe ${timeframe}`)
         curl.postJSON(url, data, (err, res, data) => {
             try {
                 if (!err) {
                     let jsonData = JSON.parse(data);
                     if (jsonData.data && !jsonData.error) {
                         let beautifyData = beautify(jsonData.data, timeframe);
-                        debug(`signals ${timeframe} ${_.keys(beautifyData).length} symbols loaded`);
+                        timeframe && debug(`signals ${timeframe} ${_.keys(beautifyData).length} symbols loaded`);
 
                         resolve(beautifyData);
                     }

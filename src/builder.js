@@ -139,30 +139,30 @@ module.exports = function ({ env, appEmitter }) {
                 stochastic();
                 stochasticRSI();
                 momentum();
-                topGainers();
+                // topGainers();
 
                 return specialData;
 
-                function topGainers() {
-                    const changes = buildIndicators.changes = buildIndicators.changes || {};
-                    specialData.changes = changes[symbolId] = changes[symbolId] || {};
-                    if (+timeframe === 5) {
-                        _.extend(changes[symbolId], _.range(1, 13).reduce((change, i) =>
-                                (_.extend(change, { [`last${i * 5}mChange`]: _(points).slice(-i).sumBy('changeFromOpen') }))
-                            , { symbolId }));
-                    }
-                    if (+timeframe === 1) {
-                        _.extend(changes[symbolId], _.range(1, 5).reduce((change, i) =>
-                                (_.extend(change, { [`last${i}mChange`]: _(points).slice(-i).sumBy('changeFromOpen') }))
-                            , { symbolId }));
-                    }
-                    buildIndicators.gainers = _.range(1, 13).reduce((gainers, i) => {
-                        const key = `last${i * 5}mChange`;
-                        gainers[key] = _.orderBy(_.values(changes), key, 'desc').filter(change => change[key] > 0);
-                        return gainers
-                    }, {});
-
-                }
+                // function topGainers() {
+                //     const changes = buildIndicators.changes = buildIndicators.changes || {};
+                //     specialData.changes = changes[symbolId] = changes[symbolId] || {};
+                //     if (+timeframe === 5) {
+                //         _.extend(changes[symbolId], _.range(1, 13).reduce((change, i) =>
+                //                 (_.extend(change, { [`last${i * 5}mChange`]: _(points).slice(-i).sumBy('changeFromOpen') }))
+                //             , { symbolId }));
+                //     }
+                //     if (+timeframe === 1) {
+                //         _.extend(changes[symbolId], _.range(1, 5).reduce((change, i) =>
+                //                 (_.extend(change, { [`last${i}mChange`]: _(points).slice(-i).sumBy('changeFromOpen') }))
+                //             , { symbolId }));
+                //     }
+                //     buildIndicators.gainers = _.range(1, 13).reduce((gainers, i) => {
+                //         const key = `last${i * 5}mChange`;
+                //         gainers[key] = _.orderBy(_.values(changes), key, 'desc').filter(change => change[key] > 0);
+                //         return gainers
+                //     }, {});
+                //
+                // }
 
 
                 function close() {
