@@ -23,7 +23,7 @@ module.exports = function ({ env, appEmitter }) {
         const strData = JSON.stringify(_.omit(data, ['points']));
         await redis.publish(`newData:m${timeframe}`, strData);
         await redis.setAsync(key, strData, 'EX', 7 * 24 * 60 * 60); //last 7 days
-        console.log(key + ' saved');
+        //console.log(key + ' saved');
     });
 
 
