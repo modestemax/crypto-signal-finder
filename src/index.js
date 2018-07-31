@@ -1,7 +1,7 @@
 console.log('Starting App');
 
 const formatError = require('format-error').format;
-const {timeframesIntervals}=require('common/settings');
+const { timeframesIntervals } = require('common/settings');
 
 const env = {
     PRODUCTION: !!process.env.PRODUCTION,
