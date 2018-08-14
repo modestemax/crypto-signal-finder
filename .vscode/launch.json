@@ -10,7 +10,8 @@
             "name": "A.compile",
             "program": "${workspaceFolder}/src/index.js",
             "env": {
-                "DEBUG":"*"
+                "DEBUG":"*",
+                "TIMEFRAMES":"15,60,240"
             }
         }
     ]
