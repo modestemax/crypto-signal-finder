@@ -9,14 +9,6 @@
   "author": "max",
   "license": "ISC",
   "dependencies": {
-    "bluebird": "^3.5.1",
-    "common": "file:../common",
-    "curl": "^0.1.4",
-    "debug": "^3.1.0",
-    "format-error": "^1.0.0",
-    "is-sorted": "^1.0.5",
-    "lodash": "^4.17.10",
-    "redis": "^2.8.0",
-    "trend": "^0.3.0"
+   
   }
 }

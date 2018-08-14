@@ -1,6 +1,6 @@
 const debug = require('debug')('signals');
 const _ = require('lodash');
-const tvLoader = require('./tv-loader');
+const { tradingView } = require('common');
 
 module.exports = function ({ env, appEmitter }) {
     let { emitException } = appEmitter;
@@ -50,14 +50,11 @@ module.exports = function ({ env, appEmitter }) {
 
         //get signal max 1 time per second
         const throttledGetSignals = _.throttle(() =>
-            tvLoader({
-                timeframe,
-                filter: SYMBOLS_FILTER,
-                exchangeId: EXCHANGE
-            }).then(
-                data => appEmitter.emit('tv:signals', { markets: data, timeframe }),
-                err => appEmitter.emit('tv:signals-error', err)
-            )
+            tradingView({ timeframe, filter: SYMBOLS_FILTER, exchangeId: EXCHANGE })
+                .then(
+                    data => appEmitter.emit('tv:signals', { markets: data, timeframe }),
+                    err => appEmitter.emit('tv:signals-error', err)
+                )
             , 10e3);
 
         // setInterval(throttledGetSignals, 1e3)
